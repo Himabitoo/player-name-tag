@@ -1,9 +1,9 @@
-function GetCharInfoById(cid)
+function GetCharInfoByName(name)
 
     local charInfo = nil
-    local query = "SELECT charinfo FROM players WHERE cid = @cid LIMIT 1"
+    local query = "SELECT charinfo FROM players WHERE name = @name LIMIT 1"
 
-    MySQL.Async.fetchScalar(query, {['@cid'] = cid}, function(result)
+    MySQL.Async.fetchScalar(query, {['@name'] = name}, function(result)
         if result then
             charInfo = result
         end
@@ -16,7 +16,7 @@ function GetCharInfoById(cid)
     return charInfo
 end
 
-function GetRoalNameFromInfo(playerCid,charInfo)
+function GetRoalNameFromInfo(charInfo)
 
     local FirstName = ""
     local LastName = ""
@@ -28,7 +28,6 @@ function GetRoalNameFromInfo(playerCid,charInfo)
 
     -- new { "firstname":Firstname, "lastname":Lastname}
     local newInfoData = json.encode({
-        cid = playerCid,
         firstname = FirstName,
         lastname = LastName
     })
@@ -36,23 +35,13 @@ function GetRoalNameFromInfo(playerCid,charInfo)
     return newInfoData
 end
 
-function GetPlayerCid(playerId)
-    local identifiers = GetPlayerIdentifiers(playerId)
-    for _, identifier in ipairs(identifiers) do
-        if string.find(identifier, "steam:") then
-            return tonumber(string.sub(identifier, 7), 16)
-        end
-    end
-    return nil
-end
-
 Citizen.CreateThread(function()
     while true do
         Citizen.Wait(0)
         for _, player in ipairs(GetPlayers()) do
-            local playerCid = GetPlayerCid(player)
-            local charInfo = GetCharInfoById(playerCid)
-            TriggerClientEvent('DisplayRolePlayName', -1, GetRoalNameFromInfo(playerCid,charInfo))
+            local playerName = GetPlayerName(player)
+            local charInfo = GetCharInfoByName(playerName)
+            TriggerClientEvent('DisplayRolePlayName', -1, GetRoalNameFromInfo(charInfo))
         end
     end
 end)
