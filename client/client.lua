@@ -27,17 +27,12 @@ AddEventHandler('DisplayRolePlayName',function(playerInfo)
         AboveHeadLabel = "[" .. PlayerID .. "]"
     end
 
-    local ped = GetPlayerPed(PlayerID)
-    local x, y, z = table.unpack(GetEntityCoords(ped))
+    local ped = GetPlayerPed(-1)
 
-    if x and y and z then
-        print("プレイヤーの座標: x = " .. x .. ", y = " .. y .. ", z = " .. z)
-    else
-        print("プレイヤーが見つかりませんでした。")
+    if ped then
+        local x, y, z = table.unpack(GetEntityCoords(ped))
+        DrawText3DAboveHead(x, y, z + 1.0, AboveHeadLabel)
     end
-
-    DrawText3DAboveHead(x,y,z,AboveHeadLabel)
-
 end)
 
 
