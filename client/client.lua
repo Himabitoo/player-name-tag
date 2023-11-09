@@ -49,6 +49,6 @@ function DrawText3DAboveHead(x, y, z, text)
 
     AddTextComponentString(text)
     DrawText(_x,_y)
-    local factor = (string.len(text)) / 370
-    DrawRect(_x,_y+0.0125, 0.03+ factor, 0.03, 41, 11, 41, 90)
+    -- local factor = (string.len(text)) / 370
+    -- DrawRect(_x,_y+0.0125, 0.03+ factor, 0.03, 41, 11, 41, 90)
 end
