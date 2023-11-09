@@ -1,40 +1,74 @@
-RegisterNetEvent('DisplayRolePlayName')
-AddEventHandler('DisplayRolePlayName',function(playerInfo)
-  
-    local AboveHeadLabel = ""
-   
-    -- json decoder
-    local PlayerInfoData = json.decode(playerInfo)
-    PlayerID = GetPlayerServerId(NetworkGetEntityOwner(PlayerPedId()))
-    PlayerFirstName = PlayerInfoData.firstname
-    PlayerLastName = PlayerInfoData.lastname
+TriggerServerEvent('nazu-nametag:GetActivePlayersFullName')
 
-    PlayerRolePlayName = PlayerFirstName .. " " .. PlayerLastName
+local ActivePlayersInfo
 
-    -- PlayerID -> true || RolePlayName -> true
-    if Config.ShowPlayerID and Config.ShowRolePlayName  then
+RegisterNetEvent('nazu-nametag:DisplayRolePlayName')
+AddEventHandler('nazu-nametag:DisplayRolePlayName', function(ActivePlayersNamelist)
 
-        AboveHeadLabel = "[" .. PlayerID .. "] " .. PlayerRolePlayName
+    ActivePlayersInfo = ActivePlayersNamelist
 
-    -- PlayerID -> false || RolePlayName -> true
-    elseif not Config.ShowPlayerID  and Config.ShowRolePlayName then
-
-        AboveHeadLabel = PlayerRolePlayName
-
-    -- PlayerID -> true || RolePlayName -> false
-    elseif Config.ShowPlayerID  then
-
-        AboveHeadLabel = "[" .. PlayerID .. "]"
-    end
-
-    local ped = GetPlayerPed(-1)
-
-    if ped then
-        local x, y, z = table.unpack(GetEntityCoords(ped))
-        DrawText3DAboveHead(x, y, z + 1.0, AboveHeadLabel)
-    end
 end)
 
+Citizen.CreateThread(function ()
+    while true do
+        Citizen.Wait(0)
+        if ActivePlayersInfo then
+            for _, playerInfo in ipairs(ActivePlayersInfo) do
+
+                local AboveHeadLabel = ""
+
+                -- json decoder
+                local PlayerInfoData = json.decode(playerInfo)
+
+                print(PlayerInfoData)
+
+                PlayerID = GetPlayerServerId(NetworkGetEntityOwner(PlayerPedId()))
+                PlayerFirstName = PlayerInfoData.firstname
+                PlayerLastName = PlayerInfoData.lastname
+
+                local playerFullName = PlayerFirstName .. " " .. PlayerLastName
+
+                print(playerFullName)
+
+
+                -- PlayerID -> false || RolePlayName -> true
+                if not Config.ShowPlayerID and Config.ShowRolePlayName then
+
+                    AboveHeadLabel = playerFullName
+
+                -- PlayerID -> true || RolePlayName -> true
+                elseif Config.ShowPlayerID and Config.ShowRolePlayName  then
+
+                    AboveHeadLabel = "[" .. PlayerID .. "] " .. playerFullName
+
+
+                -- PlayerID -> true || RolePlayName -> false
+                elseif Config.ShowPlayerID and not Config.ShowRolePlayName then
+
+                    AboveHeadLabel = "[" .. PlayerID .. "]"
+
+                else
+
+                    print('config error')
+
+                end
+
+                print(AboveHeadLabel)
+
+                local ped = GetPlayerPed(-1)
+
+                if ped then
+                    local x, y, z = table.unpack(GetEntityCoords(ped))
+                    DrawText3DAboveHead(x, y, z + 1.0, AboveHeadLabel)
+                end
+            end
+        else
+
+            print("no info data")
+
+        end
+    end
+end)
 
 function DrawText3DAboveHead(x, y, z, text)
     local onScreen,_x,_y=World3dToScreen2d(x,y,z)
@@ -49,6 +83,4 @@ function DrawText3DAboveHead(x, y, z, text)
 
     AddTextComponentString(text)
     DrawText(_x,_y)
-    -- local factor = (string.len(text)) / 370
-    -- DrawRect(_x,_y+0.0125, 0.03+ factor, 0.03, 41, 11, 41, 90)
 end
